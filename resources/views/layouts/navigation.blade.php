@@ -17,6 +17,13 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Lifereer Plan') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('profiles.index')" :active="request()->routeIs('profiles.*')">
+                        {{ __('Profiles') }}
+                    </x-nav-link>
+                    
+                    <x-nav-link :href="route('expenses.index')" :active="request()->routeIs('expenses.*')">
+                        {{ __('Expenses') }}
+                    </x-nav-link>
                 </div>
             </div>
 
