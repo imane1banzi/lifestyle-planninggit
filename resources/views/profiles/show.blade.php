@@ -21,7 +21,7 @@
     <div class="card shadow-sm p-4">
         <h1 class="text-center mb-4">Profile Details</h1>
         
-        <p><strong>ID:</strong> {{ $profile->id }}</p>
+        <p><strong>N:</strong> {{ $profile->id }}</p>
         <p><strong>Name:</strong> {{ $profile->name }}</p>
         
         <div class="text-right mt-4">

@@ -2,11 +2,12 @@
 // app/Http/Controllers/ExpenseController.php
 
 namespace App\Http\Controllers;
-
+use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Expense;
 use App\Models\Profile; // Assurez-vous d'importer le modèle Profile
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+
 
 class ExpenseController extends Controller
 {
@@ -138,4 +139,44 @@ class ExpenseController extends Controller
         $expense->delete();
         return redirect()->route('expenses.index')->with('success', 'Expense deleted successfully.');
     }
+   public function generatePDF($profileId)
+{
+    // Try to fetch the profile and expenses
+    try {
+        $profile = Profile::findOrFail($profileId);
+        $expenses = Expense::where('profile_id', $profileId)->get();
+
+        // Check if expenses exist
+        if ($expenses->isEmpty()) {
+            return back()->with('error', 'No expenses found for this profile.');
+        }
+
+        // Generate the PDF
+        $pdf = PDF::loadView('expenses.pdf', [
+            'profile' => $profile,
+            'expenses' => $expenses,
+        ])->setPaper('a4', 'portrait'); // Optional: Set paper size and orientation
+
+        // Download the PDF
+        return $pdf->download('expenses_' . strtolower(str_replace(' ', '_', $profile->name)) . '.pdf');
+    } catch (\Exception $e) {
+        // Log the error or handle it appropriately
+        return back()->with('error', 'Could not generate PDF: ' . $e->getMessage());
+    }
+}
+public function printSummary($profileId)
+{
+    // Récupérez le profil par ID
+    $profile = Profile::findOrFail($profileId);
+    
+    // Récupérez les totaux et les revenus nécessaires
+    $totals = $this->calculateTotals($profileId);
+    $incomeNeeded = $this->calculateIncomeNeeded($profileId);
+    
+    // Générer le PDF pour un seul profil
+    $pdf = PDF::loadView('expenses.summary_pdf', compact('profile', 'totals', 'incomeNeeded'));
+    
+    // Retourner le PDF au navigateur
+    return $pdf->download('profile_' . $profile->id . '_summary.pdf');
+}
 }

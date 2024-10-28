@@ -34,4 +34,5 @@ Route::middleware(['auth'])->group(function () {
 });
 Route::delete('/expenses/{expense}', [ExpenseController::class, 'remove'])->name('expenses.remove');
 
+Route::get('expenses/pdf/{profile}', [ExpenseController::class, 'printSummary'])->name('expenses.pdf');
 require __DIR__.'/auth.php';

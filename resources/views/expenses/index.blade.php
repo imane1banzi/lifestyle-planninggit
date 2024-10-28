@@ -25,6 +25,11 @@
                             <div class="card mb-4 shadow">
                                 <div class="card-body">
                                     <h2 class="card-title text-success">Profile: {{ $profile->name }}</h2>
+                                     <div class="text-right mb-3">
+                <a href="{{ route('expenses.pdf', $profile->id) }}" class="btn btn-primary">
+                    <i class="bi bi-file-earmark-pdf"></i> Print Expenses as PDF
+                </a>
+            </div>
                                     <ul class="list-group list-group-flush mb-3">
                                         <li class="list-group-item d-flex justify-content-between align-items-center">
                                             <span>Subscriptions:</span>
