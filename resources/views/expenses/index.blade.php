@@ -15,8 +15,8 @@
                                 <i class="bi bi-plus-circle"></i> Create New Expense
                             </a>
                         </div>
-
-                        <h1 class="text-center mb-4 text-primary display-4">
+                     
+                        <h1 class="text-center font-semibold mb-4 text-primary display-4">
                             <i class="bi bi-wallet2"></i> Expense List
                         </h1>
 
