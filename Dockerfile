@@ -1,36 +1,42 @@
-# Étape 1 : Image de base PHP
-FROM php:8.2-fpm AS base
+# Utiliser une image PHP avec Apache
+FROM php:8.2-apache
 
-# Installer les dépendances système requises
+# Installer les extensions nécessaires pour Laravel
 RUN apt-get update && apt-get install -y \
-    git \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    zip \
     unzip \
-    libzip-dev \
-    && docker-php-ext-install zip
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo pdo_mysql gd
 
-# Étape 2 : Installer Composer
-FROM composer:latest AS composer
+# Activer le module mod_rewrite d'Apache pour Laravel
+RUN a2enmod rewrite
 
-# Étape 3 : Image finale
-FROM base
-
-# Copier l'exécutable Composer depuis l'image Composer
-COPY --from=composer /usr/bin/composer /usr/bin/composer
+# Copier le fichier de configuration Apache
+COPY apache.conf /etc/apache2/sites-available/000-default.conf
 
 # Définir le répertoire de travail
-WORKDIR /app
+WORKDIR /var/www/html
 
-# Copier le fichier composer.json et composer.lock
-COPY composer.json composer.lock ./
+# Copier tout le projet dans le conteneur
+COPY . /var/www/html
 
-# Installer les dépendances
-RUN composer install --no-dev
+# Installer Composer directement dans le conteneur
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Copier le reste de votre application
-COPY . .
+# Donner les permissions nécessaires pour Apache
+RUN chown -R www-data:www-data /var/www/html
 
-# Exposer le port
-EXPOSE 9000
+# Installer les dépendances Laravel via Composer
+RUN composer install --no-dev --optimize-autoloader
 
-# Commande pour démarrer le serveur PHP
-CMD ["php-fpm"]
+# Donner les permissions nécessaires au dossier storage et bootstrap/cache
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Exposer le port 80 pour Apache
+EXPOSE 80
+
+# Commande pour démarrer Apache
+CMD ["apache2-foreground"]
