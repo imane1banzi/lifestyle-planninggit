@@ -1,23 +1,36 @@
-# Utilise une image PHP officielle
-FROM php:8.2-apache
+# Étape 1 : Image de base PHP
+FROM php:8.2-fpm AS base
 
-# Installe les dépendances système requises
+# Installer les dépendances système requises
 RUN apt-get update && apt-get install -y \
-    curl \
+    git \
     unzip \
-    && rm -rf /var/lib/apt/lists/*
+    libzip-dev \
+    && docker-php-ext-install zip
 
-# Installe Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer
+# Étape 2 : Installer Composer
+FROM composer:latest AS composer
 
-# Définit le répertoire de travail
+# Étape 3 : Image finale
+FROM base
+
+# Copier l'exécutable Composer depuis l'image Composer
+COPY --from=composer /usr/bin/composer /usr/bin/composer
+
+# Définir le répertoire de travail
 WORKDIR /app
 
-# Copie les fichiers de l'application dans le conteneur
-COPY . .
+# Copier le fichier composer.json et composer.lock
+COPY composer.json composer.lock ./
 
-# Installe les dépendances PHP
+# Installer les dépendances
 RUN composer install --no-dev
 
-# Expose le port 80
-EXPOSE 80
+# Copier le reste de votre application
+COPY . .
+
+# Exposer le port
+EXPOSE 9000
+
+# Commande pour démarrer le serveur PHP
+CMD ["php-fpm"]
