@@ -1,4 +1,3 @@
-
 services:
   app:
     build:
@@ -13,18 +12,24 @@ services:
       - ./storage:/var/www/storage
     networks:
       - laravel
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: dpg-csjmkqtsvqrc73etvevg-a
+      DB_PORT: 5432
+      DB_DATABASE: lifestyle_planning
+      DB_USERNAME: lifestyle_planning_user
+      DB_PASSWORD: TW51NPjX97hiniIbbfEQNkOmlSzBY0d6
 
-  mysql:
-    image: mysql:8.0
-    container_name: mysql
+  postgres:
+    image: postgres:13
+    container_name: postgres
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: lifestyle_planning
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_USER: root
-      MYSQL_PASSWORD: root
+      POSTGRES_DB: lifestyle_planning
+      POSTGRES_USER: lifestyle_planning_user
+      POSTGRES_PASSWORD: TW51NPjX97hiniIbbfEQNkOmlSzBY0d6
     volumes:
-      - mysql_data:/var/lib/mysql
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - laravel
 
@@ -44,4 +49,4 @@ networks:
   laravel:
 
 volumes:
-  mysql_data:
+  postgres_data:
