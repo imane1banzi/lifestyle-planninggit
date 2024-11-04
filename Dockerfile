@@ -26,14 +26,12 @@ COPY . /var/www/html
 # Installer Composer directement dans le conteneur
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Donner les permissions nécessaires pour Apache
-RUN chown -R www-data:www-data /var/www/html
-
-# Installer les dépendances Laravel via Composer
-RUN composer install --no-dev --optimize-autoloader
+# Installer les dépendances Laravel en mode production
+RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
 # Donner les permissions nécessaires au dossier storage et bootstrap/cache
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Exposer le port 80 pour Apache
 EXPOSE 80
