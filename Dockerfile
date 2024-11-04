@@ -8,10 +8,13 @@ COPY . /var/www/html
 
 # Définir le répertoire de travail
 WORKDIR /var/www/html
-
+# Donner les permissions nécessaires pour Apache
+RUN chown -R www-data:www-data /var/www/html
 # Exposez le port 80
 EXPOSE 80
 
+# Donner les permissions nécessaires au dossier storage et bootstrap/cache
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 # Activez le module de réécriture
 RUN a2enmod rewrite
 
