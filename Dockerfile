@@ -35,5 +35,8 @@ RUN a2enmod rewrite
 # Installer les dépendances du projet avec Composer
 RUN composer install --no-dev --optimize-autoloader
 
+# Exécuter les migrations après l'installation des dépendances
+RUN php artisan migrate --force
 # Commande pour démarrer Apache en mode frontal
 CMD ["apache2-foreground"]
+
