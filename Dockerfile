@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo pdo_mysql gd
+    && docker-php-ext-install pdo pdo_mysql gd mbstring xml
 
 # Activer le module mod_rewrite d'Apache pour Laravel
 RUN a2enmod rewrite
@@ -20,14 +20,11 @@ COPY apache.conf /etc/apache2/sites-available/000-default.conf
 # Définir le répertoire de travail
 WORKDIR /var/www/html
 
-# Copier tout le projet dans le conteneur
+# Copier tout le projet dans le conteneur, y compris le dossier vendor
 COPY . /var/www/html
 
-# Installer Composer directement dans le conteneur
+# Installer Composer directement dans le conteneur si nécessaire
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
-# Installer les dépendances Laravel en mode production
-RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
 # Donner les permissions nécessaires au dossier storage et bootstrap/cache
 RUN chown -R www-data:www-data /var/www/html \
