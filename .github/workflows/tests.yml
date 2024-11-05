@@ -1,47 +1,52 @@
-name: Tests
+# .github/workflows/deploy.yml
+name: Deploy Laravel Application
 
 on:
   push:
     branches:
-      - master
-      - '*.x'
-  pull_request:
-  schedule:
-    - cron: '0 0 * * *'
-
-permissions:
-  contents: read
+      - main  # Déclenche le workflow sur chaque push vers la branche main
 
 jobs:
-  tests:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
-    strategy:
-      fail-fast: true
-      matrix:
-        php: [8.2, 8.3]
-
-    name: PHP ${{ matrix.php }}
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-      - name: Setup PHP
+      - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php }}
-          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite
-          coverage: none
+          php-version: '8.2'
 
-      - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-interaction --no-progress
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zip unzip git curl libpq-dev
+          curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer --version=2.7.9
 
-      - name: Copy environment file
-        run: cp .env.example .env
+      - name: Install project dependencies
+        run: composer install --no-dev --optimize-autoloader
 
-      - name: Generate app key
-        run: php artisan key:generate
+      - name: Build Docker image
+        run: docker build -t myapp:latest .
 
-      - name: Execute tests
-        run: vendor/bin/phpunit
+      - name: Run migrations
+        env:
+          APP_ENV: production
+          DB_CONNECTION: pgsql
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_DATABASE: ${{ secrets.DB_DATABASE }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        run: docker run --rm myapp:latest php artisan migrate --force
+
+      - name: Push to Render or other deployment
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+          docker tag myapp:latest your-repository-url/myapp:latest
+          docker push your-repository-url/myapp:latest
