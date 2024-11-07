@@ -30,6 +30,7 @@
 
             <!-- Page Content -->
             <main>
+                @csrf
                 {{ $slot }}
             </main>
         </div>

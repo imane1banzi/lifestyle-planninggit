@@ -6,6 +6,7 @@
     </x-slot>
 
     <div class="py-12" style="background-color: #f4f7fa;">
+        @csrf
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white shadow-md rounded-lg overflow-hidden">
                 <div class="p-6">
