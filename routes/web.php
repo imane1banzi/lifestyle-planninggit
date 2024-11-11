@@ -5,15 +5,15 @@ use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\QuickStartController;
 
-// Redirection de la page d'accueil vers la page de connexion
+// Redirection de la page d'accueil vers le tableau de bord directement
 Route::get('/', function () {
-    return redirect()->route('login');
+    return redirect()->route('dashboard');
 });
 
-// Tableau de bord - accessible uniquement aux utilisateurs authentifiés et vérifiés
+// Tableau de bord - accessible sans authentification
 Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
 // Routes protégées par le middleware 'auth'
@@ -36,6 +36,13 @@ Route::middleware('auth')->group(function () {
     // Route pour générer le PDF d'un profil
     Route::get('expenses/pdf/{profile}', [ExpenseController::class, 'printSummary'])->name('expenses.pdf');
 });
+// In your routes file, e.g., web.php
+
+Route::get('/quick-start', [QuickStartController::class, 'index'])->name('quick.start');
+Route::post('/quick-start/profile', [QuickStartController::class, 'createProfile'])->name('quick.createProfile');
+Route::post('/quick-start/expense', [QuickStartController::class, 'createExpense'])->name('quick.createExpense');
+Route::get('/quick-start/summary', [QuickStartController::class, 'summary'])->name('quick.summary');
+
 
 // Chargement des routes d'authentification
 require __DIR__.'/auth.php';

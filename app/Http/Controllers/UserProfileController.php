@@ -10,13 +10,16 @@ class UserProfileController extends Controller
 {
     public function index()
     {
-        // Récupérer tous les profils de l'utilisateur connecté
-        $profiles = Auth::user()->profiles;
+        // Check if the user is authenticated; if not, retrieve all profiles
+        $profiles = Auth::check() ? Auth::user()->profiles : Profile::all();
         return view('profiles.index', compact('profiles'));
     }
 
     public function create()
     {
+        if (!Auth::check()) {
+            return redirect()->route('login')->with('error', 'Vous devez être connecté pour créer un profil.');
+        }
         return view('profiles.create');
     }
 
@@ -26,21 +29,27 @@ class UserProfileController extends Controller
             'name' => 'required|string|max:255',
         ]);
 
-        // Créer un nouveau profil associé à l'utilisateur authentifié
-        $profile = new Profile([
-            'name' => $request->name,
-            'user_id' => Auth::id(), // Utiliser Auth pour obtenir l'ID de l'utilisateur connecté
-        ]);
+        if (Auth::check()) {
+            // Create a new profile associated with the authenticated user
+            $profile = new Profile([
+                'name' => $request->name,
+                'user_id' => Auth::id(),
+            ]);
 
-        $profile->save();
+            $profile->save();
 
-        return redirect()->route('profiles.index')->with('success', 'Profil créé avec succès.');
+            return redirect()->route('profiles.index')->with('success', 'Profil créé avec succès.');
+        }
+
+        return redirect()->route('login')->with('error', 'Vous devez être connecté pour créer un profil.');
     }
 
     public function show(Profile $profile)
     {
-        // Vérifier si le profil appartient à l'utilisateur authentifié
-        if ($profile->user_id !== Auth::id()) {
+        // For unauthenticated users, allow viewing but restrict access to only public profiles
+        if (Auth::check() && $profile->user_id === Auth::id()) {
+            return view('profiles.show', compact('profile'));
+        } elseif (!$profile->is_public) { // Assuming there's an 'is_public' attribute for public profiles
             return abort(403, 'Accès refusé.');
         }
 
@@ -49,8 +58,7 @@ class UserProfileController extends Controller
 
     public function destroy(Profile $profile)
     {
-        // Vérifier si le profil appartient à l'utilisateur authentifié avant de le supprimer
-        if ($profile->user_id !== Auth::id()) {
+        if (!Auth::check() || $profile->user_id !== Auth::id()) {
             return abort(403, 'Accès refusé.');
         }
 
