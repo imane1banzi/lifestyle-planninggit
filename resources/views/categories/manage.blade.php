@@ -12,12 +12,14 @@
 
                     <!-- Form to Add Category -->
                     <div class="mb-5">
-                        <h3 class="font-semibold text-lg text-primary">Add Category</h3>
+                        <h3 class="font-semibold text-lg text-primary">
+                            <i class="bi bi-plus-circle text-success"></i> Add Category
+                        </h3>
                         <form action="{{ route('categories.store') }}" method="POST">
                             @csrf
                             <div class="form-group mb-3">
                                 <label for="category_name" class="form-label">Category Name</label>
-                                <input type="text" name="name" id="category_name" class="form-control" placeholder="Enter category name" required>
+                                <input type="text" name="name" id="category_name" class="form-control" placeholder="Enter category name (subscriptions, housing, food)" required>
                             </div>
                             <div class="form-group mb-3">
                                 <label for="is_required" class="form-label">Is Required?</label>
@@ -39,9 +41,13 @@
                         </form>
                     </div>
 
+                    <hr class="my-6">
+
                     <!-- Form to Add Category Item -->
                     <div class="mb-5">
-                        <h3 class="font-semibold text-lg text-secondary">Add Category Item</h3>
+                        <h3 class="font-semibold text-lg text-secondary">
+                            <i class="bi bi-plus-circle text-info"></i> Add Category Item
+                        </h3>
                         <form action="{{ route('category-items.store') }}" method="POST">
                             @csrf
                             <div class="form-group mb-3">
@@ -58,7 +64,7 @@
                             </div>
                             <div class="form-group mb-3">
                                 <label for="monthly_cost" class="form-label">Amount ($)</label>
-                                <input type="number" name="monthly_cost" id="monthly_cost" class="form-control" placeholder="Enter monthly cost" required>
+                                <input type="number" name="monthly_cost" id="monthly_cost" class="form-control" placeholder="Amount" required>
                             </div>
                             <div class="form-group mb-3">
                                 <label for="description" class="form-label">Description</label>
@@ -70,15 +76,19 @@
                         </form>
                     </div>
 
+                    <hr class="my-6">
+
                     <!-- List of Categories and Items -->
-                    <h3 class="font-semibold text-lg text-primary">Categories and Items</h3>
+                    <h3 class="font-semibold text-lg text-primary">
+                        <i class="bi bi-list-task text-info"></i> Categories and Items
+                    </h3>
                     <table class="table table-bordered table-striped">
                         <thead class="thead-dark">
                             <tr>
-                                <th>Category Name</th>
-                                <th>Items (Name - Cost)</th>
-                                <th>Total Cost</th>
-                                <th>Actions</th>
+                                <th><i class="bi bi-archive text-info"></i> Category Name</th>
+                                <th><i class="bi bi-box text-warning"></i> Items (Name - Cost)</th>
+                                <th><i class="bi bi-cash-stack text-success"></i> Total Cost</th>
+                                <th><i class="bi bi-gear text-warning"></i> Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -90,15 +100,15 @@
                                             @foreach ($category->items as $item)
                                                 <li>
                                                     {{ $item->name }} - ${{ number_format($item->monthly_cost, 2) }}
-                                                    <!-- Actions pour chaque item -->
+                                                    <!-- Actions for each item -->
                                                     <a href="{{ route('category-items.edit', $item->id) }}" class="btn btn-warning btn-sm">
-                                                        <i class="bi bi-pencil"></i> Edit
+                                                        <i class="bi bi-pencil text-primary"></i> Edit
                                                     </a>
                                                     <form action="{{ route('category-items.destroy', $item->id) }}" method="POST" style="display:inline;">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this item?')">
-                                                            <i class="bi bi-trash"></i> Delete
+                                                            <i class="bi bi-trash text-danger"></i> Delete
                                                         </button>
                                                     </form>
                                                 </li>
@@ -107,15 +117,15 @@
                                     </td>
                                     <td>${{ number_format($category->total_cost, 2) }}</td>
                                     <td>
-                                        <!-- Actions pour chaque catégorie -->
+                                        <!-- Actions for each category -->
                                         <a href="{{ route('categories.edit', $category->id) }}" class="btn btn-warning btn-sm">
-                                            <i class="bi bi-pencil"></i> Edit
+                                            <i class="bi bi-pencil text-primary"></i> Edit
                                         </a>
                                         <form action="{{ route('categories.destroy', $category->id) }}" method="POST" style="display:inline;">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this category?')">
-                                                <i class="bi bi-trash"></i> Delete
+                                                <i class="bi bi-trash text-danger"></i> Delete
                                             </button>
                                         </form>
                                     </td>
@@ -124,6 +134,7 @@
                         </tbody>
                     </table>                    
                 </div>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
             </div>
         </div>
     </div>

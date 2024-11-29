@@ -9,37 +9,33 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create New Profile</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
 
-<div class="container mt-5">
-    <h1 class="text-center mb-4">Create a New Profile</h1>
+                    <div class="container mt-5">
+                        <h1 class="text-center font-semibold mb-4 text-success display-4">Create a New Profile</h1>
 
-    <div class="card p-4 shadow-sm">
-        <form action="{{ route('profiles.store') }}" method="POST">
-            @csrf
-            <div class="form-group">
-                <label for="name" class="font-weight-bold">Name</label>
-                <input type="text" class="form-control" name="name" id="name" placeholder="Enter profile name" required>
+                        <div class="card p-4 shadow-sm">
+                            <form action="{{ route('profiles.store') }}" method="POST">
+                                @csrf
+                                <div class="form-group">
+                                    <label for="name" class="font-weight-bold">
+                                        <i class="bi bi-person-circle text-primary" ></i> Name
+                                    </label>
+                                    <input type="text" class="form-control" name="name" id="name" placeholder="Enter profile name (Luxury or Frugal)" required>
+                                </div>
+                                <div class="text-right">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-save"></i> Create Profile
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Bootstrap Icons CDN -->
+                    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+
+                </div>
             </div>
-            <div class="text-right">
-                <button type="submit" class="btn btn-primary">Create Profile</button>
-            </div>
-        </form>
+        </div>
     </div>
-</div>
-
-<!-- Bootstrap Scripts -->
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-</div>
-</div>
-</div>
-</div>
 </x-app-layout>
