@@ -69,7 +69,7 @@ class ExpenseController extends Controller
             'user_id' => Auth::id(),
             'profile_id' => $request->profile_id,
         ]);
-        dd($request->all());
+       
         return redirect()->route('expenses.index')->with('success', 'Expense created successfully!');
     }
 

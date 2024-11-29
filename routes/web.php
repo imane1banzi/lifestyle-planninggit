@@ -56,7 +56,7 @@ Route::post('/quick-start/expense', [QuickStartController::class, 'createExpense
 Route::get('/quick-start/summary', [QuickStartController::class, 'summary'])->name('quick.summary'); // Résumé des profils et dépenses
 
 // Routes pour les catégories et leurs items
-Route::post('/quick-start/cat', [QuickStartController::class, 'addCategory'])->name('categories.store'); // Création d'une catégorie
+Route::post('/quick-start/cat', [QuickStartController::class, 'addCategory'])->name('quick.categories.store'); // Création d'une catégorie
 Route::post('/quick-start/cat-item', [QuickStartController::class, 'addCategoryItem'])->name('quick.category-items.store');
  // Ajout d'un item à une catégorie
 

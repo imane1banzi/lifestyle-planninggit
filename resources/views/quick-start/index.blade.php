@@ -26,7 +26,7 @@
 
                 <!-- Category Creation Form -->
                 <h3 class="text-lg font-semibold mb-4 text-primary">Add Category</h3>
-                <form method="POST" action="{{ route('categories.store') }}">
+                <form method="POST" action="{{ route('quick.categories.store') }}">
                     @csrf
                     <div class="mb-4">
                         <label class="block text-gray-700 font-bold mb-2" for="category_name">Category Name</label>
