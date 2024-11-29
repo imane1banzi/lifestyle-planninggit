@@ -131,36 +131,34 @@ class QuickStartController extends Controller
      * Affiche le résumé des profils, catégories, items et dépenses.
      */
     public function summary()
-{
-    $profiles = session('profiles', []);
-    $expenses = session('expenses', []);
-    $categories = session('categories', []); // Retrieve categories from session
+    {
+        $profiles = session('profiles', []);
+        $expenses = session('expenses', []);
 
-    $profileTotals = [];
+        $profileTotals = [];
 
-    foreach ($profiles as $profile) {
-        $profileTotals[$profile['id']] = [
-            'categories' => [],
-            'monthly' => 0,
-            'yearly' => 0,
-            'biweekly' => 0,
-            'hourly' => 0,
-        ];
+        foreach ($profiles as $profile) {
+            $profileTotals[$profile['id']] = [
+                'categories' => [],
+                'monthly' => 0,
+                'yearly' => 0,
+                'biweekly' => 0,
+                'hourly' => 0,
+            ];
 
-        foreach ($expenses as $expense) {
-            if ($expense['profile_id'] === $profile['id']) {
-                $category = $expense['category'];
-                $profileTotals[$profile['id']]['categories'][$category] = ($profileTotals[$profile['id']]['categories'][$category] ?? 0) + $expense['amount'];
+            foreach ($expenses as $expense) {
+                if ($expense['profile_id'] === $profile['id']) {
+                    $category = $expense['category'];
+                    $profileTotals[$profile['id']]['categories'][$category] = ($profileTotals[$profile['id']]['categories'][$category] ?? 0) + $expense['amount'];
+                }
             }
+
+            $profileTotals[$profile['id']]['monthly'] = array_sum($profileTotals[$profile['id']]['categories']);
+            $profileTotals[$profile['id']]['yearly'] = $profileTotals[$profile['id']]['monthly'] * 12;
+            $profileTotals[$profile['id']]['biweekly'] = $profileTotals[$profile['id']]['monthly'] / 2;
+            $profileTotals[$profile['id']]['hourly'] = $profileTotals[$profile['id']]['monthly'] / 160; // 160 heures travaillées par mois
         }
 
-        $profileTotals[$profile['id']]['monthly'] = array_sum($profileTotals[$profile['id']]['categories']);
-        $profileTotals[$profile['id']]['yearly'] = $profileTotals[$profile['id']]['monthly'] * 12;
-        $profileTotals[$profile['id']]['biweekly'] = $profileTotals[$profile['id']]['monthly'] / 2;
-        $profileTotals[$profile['id']]['hourly'] = $profileTotals[$profile['id']]['monthly'] / 160; // Assuming 160 hours worked per month
+        return view('quick-start.summary', compact('profiles', 'profileTotals'));
     }
-
-    return view('quick-start.summary', compact('profiles', 'profileTotals', 'categories'));
-}
-
 }

@@ -5,18 +5,16 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            line-height: 1.6; /* Augmente l'espacement entre les lignes */
+            line-height: 1.6;
         }
         .card {
             margin-bottom: 20px;
             border: 1px solid #ddd;
             border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             padding: 20px;
         }
         .text-success {
             color: #28a745;
-            margin-bottom: 10px; /* Espace sous le titre */
         }
         .text-danger {
             color: #dc3545;
@@ -31,54 +29,39 @@
             color: white;
         }
         .list-group-item {
-            margin-bottom: 10px; /* Espace entre les éléments de la liste */
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
     <div class="card">
         <h2 class="text-success">Profile: {{ $profile->name }}</h2>
-        <ul class="list-group list-group-flush mb-3">
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <span>Subscriptions:</span>
-                <span class="badge badge-info">{{ $totals['subscriptions'] ?? '0' }}</span>
-            </li>
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <span>Housing:</span>
-                <span class="badge badge-info">{{ $totals['housing'] ?? '0' }}</span>
-            </li>
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <span>Food:</span>
-                <span class="badge badge-info">{{ $totals['food'] ?? '0' }}</span>
-            </li>
-            <li class="list-group-item font-weight-bold d-flex justify-content-between align-items-center">
-                <span>Monthly Total:</span>
-                <span class="text-danger">${{ $totals['monthly'] ?? '0' }}</span>
-            </li>
-            <li class="list-group-item font-weight-bold d-flex justify-content-between align-items-center">
-                <span>Yearly Total:</span>
-                <span class="text-danger">${{ $totals['yearly'] ?? '0' }}</span>
-            </li>
-            <li class="list-group-item font-weight-bold d-flex justify-content-between align-items-center">
-                <span>Biweekly Total:</span>
-                <span class="text-danger">${{ $totals['biweekly'] ?? '0' }}</span>
-            </li>
-            <li class="list-group-item font-weight-bold d-flex justify-content-between align-items-center">
-                <span>Hourly Total:</span>
-                <span class="text-danger">${{ $totals['hourly'] ?? '0' }}</span>
-            </li>
+
+        <!-- Categories and Items -->
+        <h3>Categories and Items</h3>
+        @foreach ($categories as $category)
+            <h4>{{ $category->name }}</h4>
+            <ul>
+                @foreach ($category->items as $item)
+                    <li>{{ $item->name }} - ${{ number_format($item->monthly_cost, 2) }}</li>
+                @endforeach
+            </ul>
+        @endforeach
+
+        <!-- Expense Totals -->
+        <h3>Expense Totals</h3>
+        <ul>
+            <li>Monthly Total: ${{ number_format($totals['monthly'], 2) }}</li>
+            <li>Yearly Total: ${{ number_format($totals['yearly'], 2) }}</li>
+            <li>Biweekly Total: ${{ number_format($totals['biweekly'], 2) }}</li>
+            <li>Hourly Total: ${{ number_format($totals['hourly'], 2) }}</li>
         </ul>
 
-        <h3 class="text-secondary" style="margin-top: 20px;">Income Needed</h3> <!-- Espace au-dessus du titre -->
-        <ul class="list-group list-group-flush">
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <span>Monthly Income Needed:</span>
-                <span class="text-warning">${{ $incomeNeeded['monthly'] ?? '0' }}</span>
-            </li>
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <span>Hourly Income Needed:</span>
-                <span class="text-warning">${{ $incomeNeeded['hourly'] ?? '0' }}</span>
-            </li>
+        <!-- Income Needed -->
+        <h3>Income Needed</h3>
+        <ul>
+            <li>Monthly Income Needed: ${{ number_format($incomeNeeded['monthly'], 2) }}</li>
+            <li>Hourly Income Needed: ${{ number_format($incomeNeeded['hourly'], 2) }}</li>
         </ul>
     </div>
 </body>

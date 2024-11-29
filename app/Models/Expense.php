@@ -9,12 +9,7 @@ class Expense extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'profile_id',
-        'user_id',
-        'category',
-        'amount',
-    ];
+    protected $fillable = ['category_id', 'amount', 'user_id', 'profile_id'];
 
     // Relation avec le modèle Profile
     public function profile()
@@ -26,5 +21,9 @@ class Expense extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
     }
 }

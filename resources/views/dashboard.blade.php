@@ -114,7 +114,7 @@
                         <p class="text-gray-600 mb-4">{{ __("Get started by creating a profile and adding your expenses.") }}</p>
                         <div class="row text-center">
                             <div class="col-md-6 mb-4">
-                                <a href="{{ route('quick.start') }}" class="text-decoration-none">
+                                <a href="{{ route('quick.index') }}" class="text-decoration-none">
                                     <div class="card shadow-sm border border-info">
                                         <div class="card-body bg-light">
                                             <h5 class="card-title text-info">
@@ -126,7 +126,7 @@
                                 </a>
                             </div>
                             <div class="col-md-6 mb-4">
-                                <a href="{{ route('quick.start') }}" class="text-decoration-none">
+                                <a href="{{ route('quick.index') }}" class="text-decoration-none">
                                     <div class="card shadow-sm border border-secondary">
                                         <div class="card-body bg-light">
                                             <h5 class="card-title text-secondary">

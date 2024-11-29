@@ -1,182 +1,229 @@
 <?php
-// app/Http/Controllers/ExpenseController.php
 
 namespace App\Http\Controllers;
-use Barryvdh\DomPDF\Facade\Pdf;
+
+use App\Models\Category;
 use App\Models\Expense;
-use App\Models\Profile; // Assurez-vous d'importer le modèle Profile
+use App\Models\Profile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ExpenseController extends Controller
 {
+    /**
+     * Liste des dépenses de l'utilisateur connecté.
+     */
     public function index()
-    {
-        // Récupérer toutes les dépenses de l'utilisateur connecté
-        $expenses = Auth::user()->expenses;
-        $profiles = Profile::where('user_id', Auth::id())->get();
+{
+    // Récupérer l'utilisateur authentifié
+    $user = Auth::user();
 
-        $totals = [];
-        $incomeNeeded = [];
-        
-        foreach ($profiles as $profile) {
-            $totals[$profile->id] = $this->calculateTotals($profile->id);
-            $incomeNeeded[$profile->id] = $this->calculateIncomeNeeded($profile->id);
-        }
+    // Récupérer toutes les dépenses de l'utilisateur avec la catégorie associée
+    $expenses = Expense::where('user_id', $user->id)
+                        ->with('category')  // Inclure la relation category
+                        ->get(); // Récupérer les dépenses avec leurs catégories
 
-        return view('expenses.index', compact('expenses', 'profiles', 'totals', 'incomeNeeded'));
+    // Récupérer les profils de l'utilisateur
+    $profiles = Profile::where('user_id', $user->id)->get();
+
+    // Calculer les totaux pour chaque profil
+    $totals = [];
+    $incomeNeeded = [];
+
+    foreach ($profiles as $profile) {
+        $totals[$profile->id] = $this->calculateTotals($profile->id);
+        $incomeNeeded[$profile->id] = $this->calculateIncomeNeeded($profile->id);
     }
 
+    return view('expenses.index', compact('expenses', 'profiles', 'totals', 'incomeNeeded'));
+}
+
+    /**
+     * Affiche le formulaire pour créer une dépense.
+     */
     public function create()
     {
-        // Récupérer tous les profils pour les passer à la vue
-        $profiles = Profile::where('user_id', Auth::id())->get(); // Récupérer les profils de l'utilisateur connecté
-        return view('expenses.create', compact('profiles'));
+        $categories = Category::where('is_active', true)->get(); // Charger les catégories actives
+        $profiles = Profile::where('user_id', Auth::id())->get(); // Profils de l'utilisateur connecté
+
+        return view('expenses.create', compact('categories', 'profiles'));
     }
 
+    /**
+     * Enregistre une nouvelle dépense.
+     */
     public function store(Request $request)
     {
         $request->validate([
-            'category' => 'required|string|in:subscriptions,housing,food', // Valider que la catégorie est valide
-            'amount' => 'required|numeric',
-            'profile_id' => 'required|exists:profiles,id', // Valider que le profile_id existe
+            'category_id' => 'required|exists:categories,id', // Valide que la catégorie existe
+            'profile_id' => 'required|exists:profiles,id', // Valide que le profil existe
         ]);
 
-        // Créer une nouvelle dépense associée à l'utilisateur authentifié
-        $expense = new Expense([
-            'category' => $request->category,
-            'amount' => $request->amount,
-            'user_id' => Auth::id(), // Utiliser Auth pour obtenir l'ID de l'utilisateur connecté
-            'profile_id' => $request->profile_id, // Associer la dépense au profil sélectionné
+        // Récupérer le total de la catégorie sélectionnée
+        $category = Category::findOrFail($request->category_id);
+
+        Expense::create([
+            'category_id' => $request->category_id,
+            'amount' => $category->total_cost, // Utiliser le total de la catégorie
+            'user_id' => Auth::id(),
+            'profile_id' => $request->profile_id,
         ]);
-
-        $expense->save();
-
-        return redirect()->route('expenses.index')->with('success', 'Dépense créée avec succès.');
+        dd($request->all());
+        return redirect()->route('expenses.index')->with('success', 'Expense created successfully!');
     }
 
+    /**
+     * Affiche une dépense spécifique.
+     */
     public function show(Expense $expense)
     {
-        // Vérifier si la dépense appartient à l'utilisateur authentifié
         if ($expense->user_id !== Auth::id()) {
-            return abort(403, 'Accès refusé.');
+            abort(403, 'Unauthorized action.');
         }
 
         return view('expenses.show', compact('expense'));
     }
 
+    /**
+     * Affiche le formulaire pour éditer une dépense.
+     */
+    public function edit(Expense $expense)
+    {
+        if ($expense->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $categories = Category::where('is_active', true)->get(); // Charger les catégories actives
+        $profiles = Profile::where('user_id', Auth::id())->get(); // Profils de l'utilisateur connecté
+
+        return view('expenses.edit', compact('expense', 'categories', 'profiles'));
+    }
+
+    /**
+     * Met à jour une dépense existante.
+     */
+    public function update(Request $request, Expense $expense)
+    {
+        $request->validate([
+            'category_id' => 'required|exists:categories,id',
+            'profile_id' => 'required|exists:profiles,id',
+        ]);
+
+        if ($expense->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // Récupérer le total de la catégorie sélectionnée
+        $category = Category::findOrFail($request->category_id);
+
+        $expense->update([
+            'category_id' => $request->category_id,
+            'amount' => $category->total_cost, // Mettre à jour avec le total de la catégorie
+            'profile_id' => $request->profile_id,
+        ]);
+
+        return redirect()->route('expenses.index')->with('success', 'Expense updated successfully!');
+    }
+
+    /**
+     * Supprime une dépense.
+     */
     public function destroy(Expense $expense)
     {
-        // Vérifier si la dépense appartient à l'utilisateur authentifié avant de la supprimer
         if ($expense->user_id !== Auth::id()) {
-            return abort(403, 'Accès refusé.');
+            abort(403, 'Unauthorized action.');
         }
 
         $expense->delete();
-        return redirect()->route('expenses.index')->with('success', 'Dépense supprimée avec succès.');
+        return redirect()->route('expenses.index')->with('success', 'Expense deleted successfully!');
     }
+
+    /**
+     * Calcule les totaux des dépenses pour un profil.
+     */
     protected function calculateTotals($profileId)
-    {
-        // Récupérer les dépenses pour le profil spécifique
-        $expenses = Expense::where('profile_id', $profileId)->get();
+{
+    $expenses = Expense::where('profile_id', $profileId)->with('category')->get();
 
-        // Initialiser les totaux
-        $totals = [
-            'subscriptions' => 0,
-            'housing' => 0,
-            'food' => 0,
-            'monthly' => 0,
-            'yearly' => 0,
-            'biweekly' => 0,
-            'hourly' => 0,
-        ];
+    $totals = [
+        'categories' => [],
+        'monthly' => 0,
+        'yearly' => 0,
+        'biweekly' => 0,
+        'hourly' => 0,
+    ];
 
-        // Calculer les totaux par catégorie
-        foreach ($expenses as $expense) {
-            $totals[$expense->category] += $expense->amount;
-        }
-
-        // Calculer les totaux mensuel, annuel, bimensuel et horaire
-        $totals['monthly'] = array_sum($totals);
-        $totals['yearly'] = $totals['monthly'] * 12;
-        $totals['biweekly'] = $totals['monthly'] / 2;
-        $totals['hourly'] = $totals['monthly'] / (40 * 4); // Supposons 40 heures par semaine
-
-        return $totals;
+    foreach ($expenses as $expense) {
+        $categoryName = $expense->category->name ?? 'Other';  // Handle category
+        $totals['categories'][$categoryName] = ($totals['categories'][$categoryName] ?? 0) + $expense->amount;
     }
 
+    $totals['monthly'] = array_sum($totals['categories']);
+    $totals['yearly'] = $totals['monthly'] * 12;
+    $totals['biweekly'] = $totals['monthly'] / 2;
+    $totals['hourly'] = $totals['monthly'] / (40 * 4);  // Assuming 40 hours/week
+
+    return $totals;
+}
+
+
+    /**
+     * Calcule le revenu nécessaire pour un profil.
+     */
     protected function calculateIncomeNeeded($profileId)
     {
         $totals = $this->calculateTotals($profileId);
-        
-        // Supposons que l'utilisateur travaille 40 heures par semaine
-        $hourlyIncomeNeeded = $totals['monthly'] / (40 * 4); // 40 heures par semaine * 4 semaines
-        
+
+        $hourlyIncomeNeeded = $totals['monthly'] / (40 * 4); // 40 heures par semaine
+
         return [
             'monthly' => $totals['monthly'],
             'hourly' => $hourlyIncomeNeeded,
         ];
     }
-    public function edit(Expense $expense)
-    {
-        return view('expenses.edit', compact('expense')); // Afficher le formulaire d'édition
-    }
 
-    public function update(Request $request, Expense $expense)
+    /**
+     * Génère un PDF pour un profil spécifique.
+     */
+    public function generatePDF($profileId)
     {
-        $request->validate([
-            'category' => 'required|string|max:255',
-            'amount' => 'required|numeric|min:0',
-        ]);
-
-        $expense->update($request->all()); // Mettre à jour la dépense
-        return redirect()->route('expenses.index')->with('success', 'Expense updated successfully.');
-    }
-
-    public function remove(Expense $expense)
-    {
-        $expense->delete();
-        return redirect()->route('expenses.index')->with('success', 'Expense deleted successfully.');
-    }
-   public function generatePDF($profileId)
-{
-    // Try to fetch the profile and expenses
-    try {
         $profile = Profile::findOrFail($profileId);
         $expenses = Expense::where('profile_id', $profileId)->get();
 
-        // Check if expenses exist
         if ($expenses->isEmpty()) {
             return back()->with('error', 'No expenses found for this profile.');
         }
 
-        // Generate the PDF
-        $pdf = PDF::loadView('expenses.pdf', [
-            'profile' => $profile,
-            'expenses' => $expenses,
-        ])->setPaper('a4', 'portrait'); // Optional: Set paper size and orientation
+        $pdf = Pdf::loadView('expenses.pdf', compact('profile', 'expenses'))
+            ->setPaper('a4', 'portrait');
 
-        // Download the PDF
         return $pdf->download('expenses_' . strtolower(str_replace(' ', '_', $profile->name)) . '.pdf');
-    } catch (\Exception $e) {
-        // Log the error or handle it appropriately
-        return back()->with('error', 'Could not generate PDF: ' . $e->getMessage());
     }
-}
-public function printSummary($profileId)
+
+    /**
+     * Imprime un résumé des dépenses d'un profil en PDF.
+     */
+    public function printSummary($profileId)
 {
-    // Récupérez le profil par ID
     $profile = Profile::findOrFail($profileId);
-    
-    // Récupérez les totaux et les revenus nécessaires
+
+    // Fetch expenses for the profile and their associated categories
+    $expenses = Expense::where('profile_id', $profileId)->with('category')->get();
+
+    // Calculate totals (by category)
     $totals = $this->calculateTotals($profileId);
+
+    // Calculate income needed
     $incomeNeeded = $this->calculateIncomeNeeded($profileId);
-    
-    // Générer le PDF pour un seul profil
-    $pdf = PDF::loadView('expenses.summary_pdf', compact('profile', 'totals', 'incomeNeeded'));
-    
-    // Retourner le PDF au navigateur
+
+    // Get only the categories associated with the expenses for this profile
+    $categories = $expenses->pluck('category')->unique();
+
+    // Load the PDF view
+    $pdf = Pdf::loadView('expenses.summary_pdf', compact('profile', 'totals', 'incomeNeeded', 'categories'));
+
     return $pdf->download('profile_' . $profile->id . '_summary.pdf');
 }
+
 }

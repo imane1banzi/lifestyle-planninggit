@@ -23,6 +23,12 @@
                     <x-nav-link :href="route('expenses.index')" :active="request()->routeIs('expenses.*')">
                         {{ __('Expenses') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')">
+                        {{ __('Categories') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('recommendations.index')" :active="request()->routeIs('recommendations.*')">
+                        {{ __('Recommendations') }}
+                    </x-nav-link>
                 </div>
                 @endauth
             </div>
